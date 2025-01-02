@@ -15,7 +15,7 @@ import type { IPreSptLoadMod } from "@spt/models/external/IPreSptLoadMod";
 class Mod implements IPostDBLoadMod,IPostSptLoadMod,IPreSptLoadMod
 {
 
-    private modName = "[Simple Season Selector]"
+    private modName = "[Random Season Ripoff]"
     
     private seasonsArray = ["Summer","Autumn","Winter","Spring","Late Autumn","Early Spring","Storm"] // seasons array
     /*
@@ -30,26 +30,28 @@ class Mod implements IPostDBLoadMod,IPostSptLoadMod,IPreSptLoadMod
 
     private finalSelectedSeason: Season
 
+    private getRandomSeason(weights: number[]): number 
+    {
+        const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+        const random = Math.random() * totalWeight;
+        let cumulativeWeight = 0;
+
+        for (let i = 0; i < weights.length; i++) {
+            cumulativeWeight += weights[i];
+            if(random < cumulativeWeight) {
+                return i;
+            }
+        }
+        throw new Error("Failed to select a season based on weightings.")
+    }
+
     public preSptLoad(container: DependencyContainer): void 
     {
         const vfs = container.resolve<VFS>("VFS");
         const modConfigJsonC = jsonc.parse(vfs.readFile(path.resolve(__dirname, "../config/config.jsonc")));
         const configServer = container.resolve<ConfigServer>("ConfigServer");
         const weatherConfig : IWeatherConfig = configServer.getConfig(ConfigTypes.WEATHER);
-        const seasonalEventConfig: ISeasonalEventConfig = configServer.getConfig(ConfigTypes.SEASONAL_EVENT)
-
-        // Saving Christmas by breaking spacetime and adding a 13th season to the year
-
-        const saveChristmas:boolean = modConfigJsonC.SaveChristmas // grabbing the config
-        
-        if (saveChristmas === true) 
-        {
-            weatherConfig.seasonDates[3].endDay = 1
-            weatherConfig.seasonDates[3].endMonth = 13
-                
-            seasonalEventConfig.events[1].endDay = 1
-            seasonalEventConfig.events[1].endMonth = 13
-        }        
+        const seasonalEventConfig: ISeasonalEventConfig = configServer.getConfig(ConfigTypes.SEASONAL_EVENT)       
     }
 
     public postDBLoad(container: DependencyContainer): void 
@@ -63,30 +65,26 @@ class Mod implements IPostDBLoadMod,IPostSptLoadMod,IPreSptLoadMod
        
         weatherConfig.overrideSeason = null // preinitialises the season to null just in case the user edited their weather.json
 
-        const selectedSeason = modConfigJsonC.SelectedSeason // pulling the value from config
+        const seasonWeights: number[] = [
+            modConfigJsonC.Summer,
+            modConfigJsonC.Autumn,
+            modConfigJsonC.Winter,
+            modConfigJsonC.Spring,
+            modConfigJsonC.LateAutumn,
+            modConfigJsonC.EarlySpring,
+            modConfigJsonC.Storm
+        ];
 
-        // setting the season in the db
-
-        if (selectedSeason === -1) 
-        {
-            logger.success(`${this.modName} Selected Season: Auto`) // yes, Auto is just null wearing a fancy hat
-            //its job here is done, as the db value is preinitialised to null already
-            //no, im not checking if they spelt "auto" instead. it will default itself to null in that case anyway
-        }
-        else if (selectedSeason < 7) 
-        { // if the config value is both a number and can be one of the seasons
-            weatherConfig.overrideSeason = selectedSeason // slap the config value into the db
-            logger.success(`${this.modName} Selected Season: ${this.seasonsArray[selectedSeason]}`) // report back a user readable season name from the seasonsArray
-        } 
-        else 
-        {
-            logger.warning(`${this.modName} Invalid config value: ${selectedSeason}. Defaulting to Auto`) // the perks of being a Helper is kinda knowing what issues people will have
+        if (seasonWeights.some(weight => typeof weight !== "number" || weight < 0)) {
+            logger.error(`${this.modName} Invalid season weights in config. All weights must be non-negative numbers. Defaulting to Auto.`);
+            return;
         }
 
-        // logger.success(`${this.modName} overrideSeason = ${weatherConfig.overrideSeason}`) //debug
+        const selectedSeason = this.getRandomSeason(seasonWeights);
 
-        this.finalSelectedSeason = weatherConfig.overrideSeason // keeping track of what value we all agreed the overrideSeason should be
-        
+        weatherConfig.overrideSeason = selectedSeason;
+        logger.success(`${this.modName} Randomly Selected Season: ${this.seasonsArray[selectedSeason]}`);
+        this.finalSelectedSeason = weatherConfig.overrideSeason;
     }
 
     public postSptLoad(container: DependencyContainer): void 
