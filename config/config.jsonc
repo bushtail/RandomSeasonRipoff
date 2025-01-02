@@ -1,20 +1,9 @@
 {
-    /*
-    Available seasons: 
-    Summer = 0,
-    Autumn = 1,
-    Winter = 2,
-    Spring = 3,
-    Late Autumn = 4,
-    Early Spring = 5,
-    Storm = 6
-    Auto = -1
-
-    Use "Auto" to disable the mod and let SPT decide the season based on the date
-    */
-    
-    "SelectedSeason": -1,
-
-    // Set to true to extend both Winter and Christmas to cover the 31st of December
-    "SaveChristmas": true
+  "Summer": 30,
+  "Autumn": 20,
+  "Winter": 10,
+  "Spring": 15,
+  "LateAutumn": 5,
+  "EarlySpring": 10,
+  "Storm": 10
 }
