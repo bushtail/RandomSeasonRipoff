@@ -1,7 +1,7 @@
 {
-    "name": "SimpleSeasonSelector",
-    "version": "1.1.4",
-    "sptVersion": "~3.10",
+	"name": "RandomSeasonRipoff",
+	"version": "1.0.0",
+	"sptVersion": "~3.10",
     "loadBefore": [],
     "loadAfter": [],
     "incompatibilities": [],
@@ -24,7 +24,7 @@
         "typescript": "5.4",
         "winston": "3.12"
     },
-    "author": "Sheepy",
-    "contributors": ["AcidPhantasm"],
+    "author": "bushtail",
+    "contributors": ["Sheepy", "AcidPhantasm"],
     "license": "MIT"
 }
