@@ -1,9 +1,9 @@
 {
   "Summer": 30,
   "Autumn": 20,
-  "Winter": 10,
+  "Winter": 5,
   "Spring": 15,
-  "LateAutumn": 5,
+  "LateAutumn": 10,
   "EarlySpring": 10,
   "Storm": 10
 }
