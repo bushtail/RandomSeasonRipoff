@@ -4,7 +4,9 @@
 	"sptVersion": "~3.10",
 	"loadBefore": [],
 	"loadAfter": [],
-	"incompatibilities": [],
+	"incompatibilities": [
+		"sheepy-simpleseasonselector"
+	],
 	"isBundleMod": false,
 	"main": "src/mod.js",
 	"scripts": {
