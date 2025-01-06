@@ -1,0 +1,53 @@
+﻿stages:
+  - package
+  - release
+
+variables:
+  VERSION: ""
+  SPT_VERSION: ""
+
+package_release:
+  stage: package
+  script:
+    - VERSION=$(jq -r '.version' package.json)
+    - SPT_VERSION=$(jq -r '.sptVersion' package.json)
+    - echo "Detected version: $VERSION targeting SPT $SPT_VERSION"
+      
+    - mkdir -p release/user/mods/bushtail-RandomSeasonRipoff
+    
+    - cp -r src release/user/mods/bushtail-RandomSeasonRipoff/
+    - cp -r config release/user/mods/bushtail-RandomSeasonRipoff/
+    - cp package.json release/user/mods/bushtail-RandomSeasonRipoff/
+    - cp LICENSE release/user/mods/bushtail-RandomSeasonRipoff/
+    
+    - cd release
+    - zip -r ../bushtail-RandomSeasonRipoff.zip
+  
+  artifacts:
+    paths:
+      - bushtail-RandomSeasonRipoff.zip
+    expire in:
+      1 week
+    
+create_release:
+  stage: release
+  needs:
+    - package_release
+  script:
+    - VERSION=$(jq -r '.version' package.json)
+    - SPT_VERSION=$(jq -r '.sptVersion' package.json)
+    - echo "Creating GitLab release for version $VERSION with SPT compatibility $SPT_VERSION..."
+
+    - echo "Creating release for Random Season Ripoff..."
+
+  release:
+    name: "Release v$VERSION"
+    tag_name: "v$VERSION"
+    description: |
+      **Version**: $VERSION
+      **Author**: bushtail
+      **SPT Version Compatibility**: $SPT_VERSION
+    assets:
+      links:
+        - name: "Release Package v$VERSION"
+          url: "${CI_PROJECT_URL}/-/jobs/${CI_JOB_ID}/artifacts/download/bushtail-RandomSeasonRipoff.zip"

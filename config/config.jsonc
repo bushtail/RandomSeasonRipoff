@@ -1,4 +1,7 @@
 {
+  /**
+  Weightings of all the seasons. 
+  */
   "Summer": 30,
   "Autumn": 20,
   "Winter": 5,
